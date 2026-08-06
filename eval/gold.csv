@@ -1,0 +1,39 @@
+qid,expected_doc,note
+q01,kb-013,current fee schedule at 2026-07-28
+q02,kb-022,SMS recovery discontinued; ID + video selfie era
+q03,kb-032,30-day window since 2026-07-01
+q04,kb-042,current earn rates
+q05,kb-052,current tier ceilings
+q06,kb-062,in-app reporting; 1 business day
+q07,kb-072,2.49% card funding charge
+q08,kb-082,same-day clearing under $10k
+q09,kb-013,no minimum charge under current schedule
+q10,kb-052,Tier 1 $5000/day
+q11,kb-012,historical: 0.9% era covers 2025-06-01
+q12,kb-031,historical: 60-day window covers 2026-03-01
+q13,kb-041,historical: 4.2% ETH rate covers 2026-03-01
+q14,kb-021,historical: SMS backup era covers 2025-09-01
+q15,kb-091,expired maintenance notice -> correct answer is 'not currently'
+q16,kb-092,referral program ended 2026-03-31
+q17,kb-091,expired maintenance notice -> 'no current window'
+q18,kb-092,promotion ended
+q19,kb-093,active degradation notice explains slow card purchases
+q20,kb-094,v1 API shutdown 2027-01-15
+q21,kb-101,tax docs by Feb 15 in Reports
+q22,kb-102,DOGE is listed as supported
+q23,kb-103,order types
+q24,kb-104,24h whitelist hold on new addresses
+q25,kb-105,20 active alerts
+q26,kb-106,insufficient funds -> skipped and retried
+q27,kb-107,1000 req/min authenticated
+q28,kb-108,closed accounts cannot be reopened
+q29,kb-109,Brazil is served
+q30,kb-110,we never ask for codes -> phishing
+q31,NONE,margin trading not in KB
+q32,kb-062,no phone number exists; honest answer is the in-app flow
+q33,NONE,bill pay not in KB
+q34,NONE,deceased-holder policy not in KB
+q35,NONE,joint accounts not in KB
+q36,NONE,loans not in KB
+q37,NONE,custodian/auditor not in KB
+q38,NONE,bank-initiated chargebacks not covered by dispute docs
