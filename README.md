@@ -206,4 +206,9 @@ calibration + escalation rules for fraud recall; structured logging of
 (question, score, cited doc, as_of) for the stale-answer monitoring
 described above; CI running pytest + both evals.
 
-**Time spent:** about 3 focused hours, plus environment setup.
+**Time spent:** about 1.5 hours end-to-end. Built AI-assisted, as the
+brief assumes — the commit history is correspondingly fast. My time went
+into the scoping decisions (no LLM, which Part C modality, refusing to
+special-case eval misses), reviewing every output and number before it
+was committed, and this writeup; the decisions are mine to defend, and
+the video walks through them.
