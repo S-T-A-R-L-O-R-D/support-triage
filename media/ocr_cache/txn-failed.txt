@@ -1,0 +1,21 @@
+9:41
+ Transaction detail
+MERIDIAN WALLET·DEMO
+- $4,500.00
+Pending · 2 days
+Withdrawal to external wallet
+Reference
+TX-88410-QQ
+Submitted
+26 Jul 2026, 14:02
+Asset
+0.061 BTC
+Balance taken
+Yes
+Network status
+Not broadcast
+The amount has already left my available balance but
+the transfer has not been broadcast. It has been stuck
+like this for two days and support chat keeps timing
+out.
+Contact support about this transaction

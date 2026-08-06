@@ -1,0 +1,14 @@
+9:41
+Sign in
+MERIDIAN WALLET·DEMO
+Email
+j.moreira@example.com
+Password
+Verification failed
+We could not deliver your two-factor authentication
+code. Your enrolled device is no longer reachable.
+Error AUTH-2291. Attempts remaining: 1
+I replaced my phone last week and never moved the
+authenticator app across. I cannot receive the code
+and I am about to be locked out completely.
+Try another method
