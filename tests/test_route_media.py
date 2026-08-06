@@ -24,6 +24,18 @@ def test_screenshots_route_to_their_queues_from_cache(tmp_path):
     assert all(r["source"] == "cache" for r in rows.values())
 
 
+def test_cache_is_keyed_by_content_not_just_filename(tmp_path):
+    from triage.route_media import _cache_path
+
+    a, b = tmp_path / "x" / "shot.png", tmp_path / "y" / "shot.png"
+    a.parent.mkdir()
+    b.parent.mkdir()
+    a.write_bytes(b"image-one")
+    b.write_bytes(b"image-two")
+    cache = tmp_path / "cache"
+    assert _cache_path(a, cache) != _cache_path(b, cache)
+
+
 def test_confidence_is_reported_for_review_triage(tmp_path):
     out = tmp_path / "routes.csv"
     main(["--input", str(REPO_ROOT / "media" / "screenshots"), "--output", str(out)])

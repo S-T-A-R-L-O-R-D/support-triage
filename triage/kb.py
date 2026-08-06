@@ -5,8 +5,13 @@ A document answers for a date `as_of` when
 empty). The `status` field is deliberately not used for selection: it
 describes the moment the KB snapshot was taken, while the dates hold for
 any as_of — a "superseded" fee schedule is still the right source for a
-question about last year. Filtering happens before retrieval, so an
-out-of-window document can never outrank an in-window one.
+question about last year. Retrieval (triage/answer.py) ranks every
+version and only then resolves the winning chain by these dates, so the
+quoted version is always the one in force at as_of.
+
+Loading is strict: malformed front matter, dates with time components,
+and dangling or asymmetric supersedes links all fail loudly here rather
+than crashing (or silently mis-answering) at query time.
 """
 import re
 from dataclasses import dataclass
@@ -53,11 +58,13 @@ def parse_doc(raw: str, source: str) -> KBDoc:
     missing = [k for k in _REQUIRED if not meta.get(k)]
     if missing:
         raise ValueError(f"{source}: missing front-matter fields {missing}")
-    if not isinstance(meta["effective_date"], date):
-        raise ValueError(f"{source}: effective_date is not a date")
+    # type() not isinstance(): datetime subclasses date, and a stray time
+    # component would blow up date comparisons at query time instead.
+    if type(meta["effective_date"]) is not date:
+        raise ValueError(f"{source}: effective_date is not a plain date")
     valid_until = meta.get("valid_until") or None
-    if valid_until is not None and not isinstance(valid_until, date):
-        raise ValueError(f"{source}: valid_until is not a date")
+    if valid_until is not None and type(valid_until) is not date:
+        raise ValueError(f"{source}: valid_until is not a plain date")
     if valid_until is not None and valid_until < meta["effective_date"]:
         raise ValueError(f"{source}: valid_until precedes effective_date")
     return KBDoc(
@@ -78,11 +85,36 @@ def load_kb(kb_dir: str | Path = KB_DIR) -> list[KBDoc]:
     paths = sorted(Path(kb_dir).glob("*.md"))
     if not paths:
         raise ValueError(f"no KB documents found in {kb_dir}")
-    docs = [parse_doc(p.read_text(encoding="utf-8"), source=p.name) for p in paths]
+    # utf-8-sig: tolerate the BOM that Excel and some Windows editors add.
+    docs = [parse_doc(p.read_text(encoding="utf-8-sig"), source=p.name) for p in paths]
     ids = [d.doc_id for d in docs]
     if len(set(ids)) != len(ids):
         raise ValueError(f"duplicate doc_ids in {kb_dir}")
+    _check_links(docs)
     return docs
+
+
+def _check_links(docs: list[KBDoc]) -> None:
+    """Supersedes links must be symmetric — an asymmetric pair would either
+    leave two versions 'in force' at once or strand a chain, so a broken
+    link is a KB bug worth stopping the world for."""
+    by_id = {d.doc_id: d for d in docs}
+    for doc in docs:
+        for field, reverse in (("superseded_by", "supersedes"),
+                               ("supersedes", "superseded_by")):
+            target_id = getattr(doc, field)
+            if not target_id:
+                continue
+            target = by_id.get(target_id)
+            if target is None:
+                raise ValueError(
+                    f"{doc.doc_id}: {field} points at unknown doc '{target_id}'"
+                )
+            if getattr(target, reverse) != doc.doc_id:
+                raise ValueError(
+                    f"{doc.doc_id} <-> {target_id}: "
+                    f"{field}/{reverse} links disagree"
+                )
 
 
 def docs_valid_at(docs: list[KBDoc], as_of: date) -> list[KBDoc]:

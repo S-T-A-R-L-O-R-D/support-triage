@@ -10,10 +10,11 @@ version can never be quoted.
 Answers are extractive — the most relevant sentences of the winning
 document — so they cannot say anything the KB does not. No LLM involved.
 
-Character n-grams (3-5) beat word n-grams on this corpus (hit@1 29/31 vs
-28/31, and a wider answerable/unanswerable score gap) because they match
-across surface variation: "Dogecoin" ~ "DOGE", "maintenance" ~
-"maintenance window". Config chosen by measurement, see eval/.
+Character n-grams (3-5) beat word n-grams on this corpus (chain-level
+hit@1 28/31 vs 27/31, and a better answer/refuse optimum: 33/38 vs
+31/38 overall) because they match across surface variation:
+"Dogecoin" ~ "DOGE". Config chosen by measurement; the honest evaluation
+lives in triage/eval_retrieval.py + eval/gold.csv.
 
 Three outcomes:
   * answered from the version in force at as_of;
@@ -35,8 +36,10 @@ from triage.kb import KB_DIR, KBDoc, load_kb
 
 # Below this cosine similarity the best match is noise, not an answer.
 # Calibrated on the 38 labelled questions: out-of-KB questions score
-# <= 0.20 (one outlier at 0.29), answerable ones >= 0.23 (one at 0.19).
-# Known trade-off documented in the README; recalibrate when the KB moves.
+# <= 0.19 with one outlier at 0.28 (q38, answered wrongly); answerable
+# ones >= 0.23 except q22 (0.18) and q24 (0.216), which are therefore
+# refused. Trade-offs documented in the README; any change to the KB or
+# the vectorizer moves these scores — recalibrate, don't trust this note.
 MIN_SCORE = 0.22
 
 REFUSAL = "Not answerable from the knowledge base as of {as_of}."

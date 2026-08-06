@@ -19,7 +19,7 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     try:
-        with open(args.input, newline="", encoding="utf-8") as f:
+        with open(args.input, newline="", encoding="utf-8-sig") as f:
             reader = csv.DictReader(f)
             if reader.fieldnames is None or "text" not in reader.fieldnames:
                 raise ValueError(f"{args.input}: expected a 'text' column")
@@ -28,12 +28,16 @@ def main(argv: list[str] | None = None) -> None:
     except (OSError, ValueError) as exc:
         sys.exit(str(exc))
 
-    predictions = model.predict(texts) if texts else []
+    # An empty text would get the model's bias class dressed up as a real
+    # prediction — emit nothing for nothing instead.
+    non_empty = [t for t in texts if t]
+    predictions = iter(model.predict(non_empty)) if non_empty else iter(())
     with open(args.output, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=["text", "prediction"])
         writer.writeheader()
-        for text, prediction in zip(texts, predictions):
-            writer.writerow({"text": text, "prediction": prediction})
+        for text in texts:
+            writer.writerow({"text": text,
+                             "prediction": next(predictions) if text else ""})
     print(f"wrote {len(texts)} predictions to {args.output}")
 
 

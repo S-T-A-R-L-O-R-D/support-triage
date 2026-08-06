@@ -44,3 +44,20 @@ def test_cli_rejects_input_without_text_column(tmp_path):
     inp.write_text("message\nhello\n", encoding="utf-8")
     with pytest.raises(SystemExit, match="text"):
         main(["--input", str(inp), "--output", str(tmp_path / "out.csv")])
+
+
+def test_cli_accepts_excel_style_utf8_bom(tmp_path):
+    inp, out = tmp_path / "messages.csv", tmp_path / "out.csv"
+    inp.write_text('text\n"I cannot log in."\n', encoding="utf-8-sig")
+    main(["--input", str(inp), "--output", str(out)])
+    rows = list(csv.DictReader(open(out, newline="", encoding="utf-8")))
+    assert rows[0]["prediction"] in ROUTES
+
+
+def test_empty_text_row_gets_no_fabricated_route(tmp_path):
+    inp, out = tmp_path / "messages.csv", tmp_path / "out.csv"
+    inp.write_text('text\n"   "\n"I cannot log in."\n', encoding="utf-8")
+    main(["--input", str(inp), "--output", str(out)])
+    rows = list(csv.DictReader(open(out, newline="", encoding="utf-8")))
+    assert rows[0]["prediction"] == ""  # no input -> no confident guess
+    assert rows[1]["prediction"] in ROUTES

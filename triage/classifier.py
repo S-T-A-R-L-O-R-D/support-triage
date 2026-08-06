@@ -19,7 +19,7 @@ ROUTES = ["account-access", "transaction-dispute", "fraud-report", "general"]
 
 def load_labelled(path: str | Path) -> tuple[list[str], list[str]]:
     """Read a text,label CSV, failing loudly on a malformed file."""
-    with open(path, newline="", encoding="utf-8") as f:
+    with open(path, newline="", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         if reader.fieldnames is None or not {"text", "label"} <= set(reader.fieldnames):
             raise ValueError(f"{path}: expected columns 'text' and 'label'")

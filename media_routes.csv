@@ -1,4 +1,4 @@
 file,route,confidence,source,needs_review
-login-error.png,account-access,0.951,ocr,no
-phishing-sms.png,fraud-report,0.301,ocr,yes
-txn-failed.png,transaction-dispute,0.945,ocr,no
+login-error.png,account-access,0.951,cache,no
+phishing-sms.png,fraud-report,0.301,cache,yes
+txn-failed.png,transaction-dispute,0.945,cache,no

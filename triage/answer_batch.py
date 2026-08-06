@@ -21,7 +21,7 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     try:
-        with open(args.input, newline="", encoding="utf-8") as f:
+        with open(args.input, newline="", encoding="utf-8-sig") as f:
             reader = csv.DictReader(f)
             fields = set(reader.fieldnames or [])
             if not {"qid", "question"} <= fields:

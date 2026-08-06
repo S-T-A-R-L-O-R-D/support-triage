@@ -17,6 +17,7 @@ the row is flagged needs_review instead of being trusted.
 """
 import argparse
 import csv
+import hashlib
 import sys
 from pathlib import Path
 
@@ -28,9 +29,16 @@ MIN_TEXT_CHARS = 40
 MIN_ROUTE_CONFIDENCE = 0.5
 
 
+def _cache_path(image: Path, cache_dir: Path) -> Path:
+    """Key the cache by content, not name: a different image that happens
+    to be called login-error.png must not inherit the sample's OCR text."""
+    digest = hashlib.sha256(image.read_bytes()).hexdigest()[:12]
+    return cache_dir / f"{image.stem}-{digest}.txt"
+
+
 def extract_text(image: Path, cache_dir: Path, refresh: bool = False) -> tuple[str, str]:
     """OCR an image, or reuse the committed cache. Returns (text, source)."""
-    cache = cache_dir / (image.stem + ".txt")
+    cache = _cache_path(image, cache_dir)
     if cache.exists() and not refresh:
         return cache.read_text(encoding="utf-8"), "cache"
     try:
