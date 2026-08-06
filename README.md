@@ -11,8 +11,8 @@ answers are extractive, and that is a deliberate choice defended below.
 uv sync --group dev          # or: pip install scikit-learn pyyaml pytest
 uv run pytest                # 25 tests
 
-# Entry point 1 — route classification
-uv run python -m triage.predict --input messages.csv --output predictions.csv
+# Entry point 1 — route classification (input: CSV with a `text` column)
+uv run python -m triage.predict --input sample_messages.csv --output predictions.csv
 
 # Entry point 2 — KB question answering
 uv run python -m triage.answer_batch --input questions.csv --output answers.csv
@@ -27,8 +27,8 @@ uv run python -m triage.route_media --input media/screenshots --output media_rou
 ```
 
 Plain `python` works too if the dependencies are installed; run from the
-repo root. `answers.csv` and `media_routes.csv` in the repo are the real
-outputs of the commands above.
+repo root. `predictions.csv`, `answers.csv` and `media_routes.csv` in the
+repo are the real outputs of the commands above.
 
 ---
 
@@ -123,18 +123,24 @@ labels hand-written per question in `eval/gold.csv`):
 | correct refusals on 7 out-of-KB questions | **6/7** |
 | overall correct behaviour | **33/38 (87%)** |
 
-Char n-grams were chosen over word n-grams by measurement (29/31 vs 28/31
-raw retrieval hit@1, wider answer/refuse margin — they bridge
-"Dogecoin"→"DOGE"). All five failures are understood, not mysterious:
+Char n-grams were chosen over word n-grams by measurement: 28/31 vs 27/31
+chain-level hit@1, and a better answer/refuse optimum (33/38 vs 31/38
+overall) — they bridge "Dogecoin"→"DOGE". All five failures are
+understood, not mysterious:
 
 - **q19** "card purchase taking so long *right now*" → the card-fee doc
   outscores the live degradation notice (fee vocabulary dominates).
-- **q22** "Dogecoin" scores just under the threshold → false refusal.
-- **q24** "new withdrawal address" sits on the threshold → refused; the
-  whitelist doc phrases it as "external wallet".
-- **q32** "phone number for your fraud team" → cites the 2FA-recovery doc
-  (which mentions phone numbers) instead of the fraud doc. No phone number
-  exists in the KB at all; the honest response is the in-app flow.
+- **q22** "Dogecoin" scores 0.18, under the 0.22 threshold → false
+  refusal (the top-ranked doc is the right one; the score is just weak).
+- **q24** "new withdrawal address" → refused, and the refusal is the
+  lesser evil: the fee docs (0.216) outrank the correct whitelist doc
+  (0.203), so lowering the threshold would quote the wrong document.
+  A ranking miss, not a threshold miss.
+- **q32** "phone number for your fraud team" → retrieval matches the
+  superseded 2FA doc (it mentions phone numbers twice) and date
+  resolution hands the citation to its current successor, not the fraud
+  doc. No phone number exists in the KB at all; the honest response is
+  the in-app flow.
 - **q38** "chargeback my own bank raised" shares dispute vocabulary with
   kb-032 → false answer where a refusal was due.
 
@@ -181,9 +187,9 @@ is flagged `needs_review` — the degradation path doing its job.
 parts — the exercise is about knowing what your numbers mean. Temporal
 correctness as a structural guarantee (filter by date, then it *cannot*
 quote the wrong era) rather than a prompt instruction. Tests that pin the
-behaviours that matter (25, all meaningful: leakage grouping, version
+behaviours that matter (32, all meaningful: leakage grouping, version
 selection at historical dates, expired notices, abstention, validation,
-batch robustness, media routing).
+KB link integrity, BOM tolerance, batch robustness, media routing).
 
 **Deliberately left out:** any LLM (defensible without one, and the brief
 says so); embedding models (char TF-IDF measured well enough on 31 docs;
@@ -193,7 +199,9 @@ wouldn't survive a held-back set); voice modality.
 
 **With more time:** a held-out calibration set for the abstention
 threshold; sentence-embedding retrieval behind the same
-chain/date-resolution logic (fixes q19 and q24 cleanly); probability
+chain/date-resolution logic (q19 and q24 are ranking misses — semantic
+similarity should separate "why is it slow" from "what does it cost",
+which char n-grams cannot); probability
 calibration + escalation rules for fraud recall; structured logging of
 (question, score, cited doc, as_of) for the stale-answer monitoring
 described above; CI running pytest + both evals.
