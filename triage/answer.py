@@ -111,7 +111,11 @@ class Answerer:
         return Answer(REFUSAL.format(as_of=as_of), [], score, answered=False)
 
     def _extract(self, question: str, doc: KBDoc) -> str:
-        """The 1-2 sentences of the winning doc most similar to the question."""
+        """Lead sentence plus the sentence most similar to the question.
+
+        These policy docs state the rule in their first sentence; the
+        best-matching sentence adds the specific detail asked about.
+        """
         sentences = _SENTENCE_SPLIT.split(doc.body.replace("\n", " "))
         if len(sentences) <= 2:
             return " ".join(sentences)
@@ -119,8 +123,8 @@ class Answerer:
             self._vectorizer.transform([question]),
             self._vectorizer.transform(sentences),
         )[0]
-        top = sorted(np.argsort(similarity)[-2:])  # best two, document order
-        return " ".join(sentences[i] for i in top)
+        ranked = [i for i in np.argsort(similarity)[::-1] if i != 0]
+        return " ".join(sentences[i] for i in sorted([0, ranked[0]]))
 
 
 def _parse_as_of(as_of: date | str) -> date:

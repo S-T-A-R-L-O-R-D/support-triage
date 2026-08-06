@@ -70,7 +70,7 @@ def parse_doc(raw: str, source: str) -> KBDoc:
         status=str(meta.get("status", "")),
         supersedes=meta.get("supersedes") or None,
         superseded_by=meta.get("superseded_by") or None,
-        body=match.group(2).strip(),
+        body=re.sub(r"^#[^\n]*\n", "", match.group(2).strip()).strip(),
     )
 
 
